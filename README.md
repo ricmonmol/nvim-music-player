@@ -19,8 +19,12 @@ a **Telescope browser**.
 - Telescope
 - fd / fdfind
 
-<!-- ## Installation (Lazy.nvim) -->
+## Screenshots
 
+![](/home/ricardo/nvim-music-player/assets/screenshoot_1_nvim_music_player.png)
+![](/home/ricardo/nvim-music-player/assets/screenshoot_2_nvim_music_player.png)
+
+<!-- ## Installation (Lazy.nvim) -->
 <!-- ```lua -->
 <!-- { -->
 <!--   "ricardomontecinos/nvim-music-player", -->
