@@ -1,13 +1,19 @@
+---@param exe string
+---@return string[] cmd
+local function generate_find_cmd(exe)
+	local cmd = ("%s --type f"):format(exe)
+	for _, ext in ipairs({ "mp3", "flac", "m4a" }) do
+		cmd = ("%s --extension %s"):format(cmd, ext)
+	end
+
+	return vim.split(cmd, " ", { plain = true, trimempty = true })
+end
+
 ---@class MusicPlayer
 local M = {}
 
 function M.browse()
-	local fd_exe = ""
-	if vim.fn.executable("fd") == 1 then
-		fd_exe = "fd"
-	elseif vim.fn.executable("fdfind") == 1 then
-		fd_exe = "fdfind"
-	else
+	if vim.fn.executable("fd") ~= 1 and vim.fn.executable("fdfind") ~= 1 then
 		vim.notify("`fd` is not installed!", vim.log.levels.ERROR)
 		return
 	end
@@ -22,16 +28,25 @@ function M.browse()
 		end
 	end
 
+	fd_exe = vim.fn.executable("fdfind") == 1 and "fdfind" or "fd"
+
+	local target = vim.fn.expand("~/Music")
+	if vim.fn.isdirectory(target) ~= 1 then
+		error(("Directory not found: `%s`"):format(target), vim.log.levels.ERROR)
+	end
+
 	require("telescope.builtin").find_files({
 		prompt_title = "🎵 Music Library",
-		cwd = vim.fn.expand("~/Music"),
-		find_command = { fd_exe, "--type", "f", "--extension", "mp3", "--extension", "flac" },
-		attach_mappings = function(promp_bufnr, map)
+		cwd = target,
+		find_command = generate_find_cmd(fd_exe),
+		---@param prompt_bufnr integer
+		---@param map fun(mode: string, lhs: string, rhs: string|function)
+		attach_mappings = function(prompt_bufnr, map)
 			map("i", "<CR>", function()
 				local selection = require("telescope.actions.state").get_selected_entry()
-				require("telescope.actions").close(promp_bufnr)
+				require("telescope.actions").close(prompt_bufnr)
 				if selection and selection.path then
-					vim.cmd.MusicPlay(vim.fn.fnameescape(selection.path))
+					vim.cmd.MusicPlay(vim.fn.fnamemodify(selection.path, ":p"))
 				end
 			end)
 
